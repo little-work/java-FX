@@ -1,5 +1,7 @@
 package com.lilin.fx.view;
 
+import com.lilin.fx.assembly.MyListView;
+import com.lilin.fx.assembly.MyTreeView;
 import com.lilin.fx.bean.FileVo;
 import com.lilin.fx.utils.FileUtils;
 import javafx.application.Application;
@@ -28,99 +30,96 @@ public class EasyFileUtil extends Application {
             + "-fx-border-width: 1;\n" + "-fx-border-style: solid;\n";
     private ObservableList<String> dataList = FXCollections.observableArrayList();
 
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("EasyFileUtil");
         //水平布局
         HBox hBox = new HBox(10);
         HBox hBox2 = new HBox(10);
-        hBox2.setAlignment(Pos.TOP_LEFT);
         hBox.setAlignment(Pos.CENTER);
+        hBox2.setAlignment(Pos.TOP_LEFT);
         //hBox.setStyle(cssDefault);
         /**
          * 创建组件
          */
-        Label userName = new Label("File Path:");
+        Label userName = new Label("文件夹路径:");
         //文件选择
         //FileChooser fileChooser = new FileChooser();
         //文件夹选择
         DirectoryChooser dc = new DirectoryChooser();
         TextField userTextField = new TextField();
         userTextField.setPrefColumnCount(20);
-        Button fileBtn = new Button("browse");
+        Button fileBtn = new Button("浏览");
         ListView listView = new ListView();
-        Button fileBt2 = new Button("sekected");
-        // TODO: 2019/9/10
-       /* for(int i=1; i<15; i++) {
-            listView.getItems().add(new CheckBoxListItem("Value"+i));
-        }
-*/
-
-
+        TreeView<String> tree=new TreeView<>();
+        //给按钮添加事件
         fileBtn.setOnAction(
                 (final ActionEvent e) -> {
-                    dc.setTitle("View Fle");
+                    dc.setTitle("选择一个文件夹");
                     dc.setInitialDirectory(
                             new File(System.getProperty("user.home"))
                     );
                     File file = dc.showDialog(primaryStage);
-                    String directoryPath=file.getAbsolutePath();
-
+                    String directoryPath = file.getAbsolutePath();
                     userTextField.setText(directoryPath);
-                    FileVo fileVo= FileUtils.getFiles(file.getAbsolutePath());
-
-                    Map<String, List<String>> map=new HashMap<>();
-                    map= FileUtils.getFile2(directoryPath,map);
-                    for(Map.Entry entry:map.entrySet()){
-                        for (String fileName:(List<String>)entry.getValue()){
+                    Map<String, List<String>> map = new HashMap<>();
+                    map = FileUtils.getFile2(directoryPath, map);
+                    for (Map.Entry entry : map.entrySet()) {
+                        for (String fileName : (List<String>) entry.getValue()) {
                             dataList.add(fileName);
                             //listView.getItems().add(new CheckBoxListItem(fileName));
                         }
                     }
-                    //https://blog.csdn.net/qq_43449112/article/details/88701291
                     listView.setItems(dataList);
-                    listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-                    /*listView.setCellFactory(new Callback<ListView<CheckBoxListItem>, ListCell<CheckBoxListItem>>() {
-                        @Override
-                        public ListCell<CheckBoxListItem> call(ListView<CheckBoxListItem> lv) {
-                            CheckBoxListCell<CheckBoxListItem> cell = new CheckBoxListCell<>(CheckBoxListItem::selectedProperty, new StringConverter<CheckBoxListItem>() {
-                                @Override
-                                public String toString(CheckBoxListItem object) {
-                                    return object.getName();
-                                }
 
-                                @Override
-                                public CheckBoxListItem fromString(String string) {
-                                    return null;
-                                }
-                            });
-                            return cell;
-                        }
-                    });*/
+
+                    FileVo fileVo=FileUtils.getFiles(directoryPath);
+                    TreeItem<String> rootItem=new MyTreeView(fileVo).getTree();
+                    tree.setRoot(rootItem);
+
                 });
+        /**
+         * 设置listView的属性
+         */
+        MyListView myListView = new MyListView(listView);
+        myListView.moreSelectModel(true);
+        myListView.moreSelectEvent();
+        listView.setEditable(true);
 
+
+        /**
+         * 设置TreeView属性
+         */
+        /*TreeItem<String> rootItem = new TreeItem<>("Inbox", rootIcon);
+        TreeItem<String> item1 = new TreeItem<>("Message" + 1);
+        TreeItem<String> item2 = new TreeItem<>("Message" + 2,rootIcon);
+        TreeItem<String> item21 = new TreeItem<>("Message" + 2.1);
+        TreeItem<String> item22 = new TreeItem<>("Message" + 2.2);
+        item2.getChildren().addAll(item21,item22);
+        TreeItem<String> item3 = new TreeItem<>("Message" + 3);
+        TreeItem<String> item4 = new TreeItem<>("Message" + 4);
+        rootItem.getChildren().addAll(item1,item2,item3,item4);*/
 
 
         //把组件都添加到水瓶布局中
-        hBox.getChildren().addAll(userName, userTextField, fileBtn, listView);
-        hBox2.getChildren().addAll(listView,fileBt2);
+        hBox.getChildren().addAll(userName, userTextField, fileBtn);
+        hBox2.getChildren().addAll(listView, tree);
 
 
         final Pane rootGroup = new VBox(10);
-        rootGroup.setPadding(new Insets(20));
+        //rootGroup.setPadding(new Insets(20));
         rootGroup.getChildren().addAll(hBox, hBox2);
         rootGroup.setPadding(new Insets(10, 10, 12, 12));
 
 
-        Scene scene = new Scene(rootGroup, 500, 300);
+        Scene scene = new Scene(rootGroup, 800, 500);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
 
     public static void main(String[] args) {
-
         launch(args);
-
     }
 }

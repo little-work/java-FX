@@ -1,15 +1,19 @@
 package com.lilin.fx.bean;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 一个FileVo就是一个文件夹  包含里面的子文件夹集合和子文件
+ */
 public class FileVo {
 
-    private String fileName;
-    private Boolean isDirectory;
-    private String filePath;
-    private FileVo fileVo;
-    private Map<String, List<String>> map;
+    private String fileName;       //如果选中的是文件不是文件夹  那么这个就是文件的名字
+    private Boolean isDirectory;   //是不是文件夹
+    private String filePath;       //文件夹的路径
+    private List<FileVo> fileVos = new ArrayList<>();          //子文件夹集合
+    private Map<String, List<String>> map;   //文件夹中的文件
 
 
     public String getFileName() {
@@ -36,12 +40,12 @@ public class FileVo {
         this.map = map;
     }
 
-    public FileVo getFileVo() {
-        return fileVo;
+    public List<FileVo> getFileVos() {
+        return fileVos;
     }
 
-    public void setFileVo(FileVo fileVo) {
-        this.fileVo = fileVo;
+    public void setFileVos(List<FileVo> fileVos) {
+        this.fileVos = fileVos;
     }
 
     public String getFilePath() {
