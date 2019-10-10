@@ -1,8 +1,6 @@
 package com.lilin.fx.utils;
 
 import com.lilin.fx.bean.FileVo;
-import javafx.collections.ObservableList;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,10 +15,10 @@ public class FileUtils {
     /**
      * 给定一个路径 数据结构树
      *
-     * @param path
-     * @return
+     * @param path   需要遍历的文件夹路径
+     * @return  数据结构树
      */
-    public static FileVo getFiles(String path) {
+    public static FileVo  getFiles(String path) {
 
         File file = new File(path);
         if (!file.exists()) {

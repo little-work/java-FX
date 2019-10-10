@@ -3,6 +3,7 @@ package com.lilin.fx.view;
 import com.lilin.fx.assembly.MyListView;
 import com.lilin.fx.assembly.MyTreeView;
 import com.lilin.fx.bean.FileVo;
+import com.lilin.fx.cellFactory.TextFieldTreeCellImpl;
 import com.lilin.fx.utils.FileUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -32,7 +33,7 @@ public class EasyFileUtil extends Application {
 
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         primaryStage.setTitle("EasyFileUtil");
         //水平布局
         HBox hBox = new HBox(10);
@@ -74,6 +75,7 @@ public class EasyFileUtil extends Application {
                     listView.setItems(dataList);
 
 
+                    //树结构设置
                     FileVo fileVo=FileUtils.getFiles(directoryPath);
                     TreeItem<String> rootItem=new MyTreeView(fileVo).getTree();
                     tree.setRoot(rootItem);
@@ -87,19 +89,14 @@ public class EasyFileUtil extends Application {
         myListView.moreSelectEvent();
         listView.setEditable(true);
 
-
         /**
-         * 设置TreeView属性
+         * 设置Tree的属性
          */
-        /*TreeItem<String> rootItem = new TreeItem<>("Inbox", rootIcon);
-        TreeItem<String> item1 = new TreeItem<>("Message" + 1);
-        TreeItem<String> item2 = new TreeItem<>("Message" + 2,rootIcon);
-        TreeItem<String> item21 = new TreeItem<>("Message" + 2.1);
-        TreeItem<String> item22 = new TreeItem<>("Message" + 2.2);
-        item2.getChildren().addAll(item21,item22);
-        TreeItem<String> item3 = new TreeItem<>("Message" + 3);
-        TreeItem<String> item4 = new TreeItem<>("Message" + 4);
-        rootItem.getChildren().addAll(item1,item2,item3,item4);*/
+        tree.setEditable(true);
+        tree.setPrefSize(300,500);
+        tree.setCellFactory((TreeView<String> p) ->
+                new TextFieldTreeCellImpl());
+
 
 
         //把组件都添加到水瓶布局中

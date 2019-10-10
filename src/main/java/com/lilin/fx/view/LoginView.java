@@ -1,6 +1,10 @@
 package com.lilin.fx.view;
 
 import javafx.application.Application;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -21,30 +25,43 @@ public class LoginView extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("JavaFX Welcome");
+        primaryStage.setTitle("飞鸽");
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
-        grid.setHgap(10);
-        grid.setVgap(10);
+        grid.setHgap(10);  //水平组件之间的间隔
+        grid.setVgap(10);  //垂直组件之间的间隔
         grid.setPadding(new Insets(25, 25, 25, 25));
 
         Text scenetitle = new Text("Welcome");
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         grid.add(scenetitle, 0, 0, 2, 1);
 
-        Label userName = new Label("User Name:");
+        Label userName = new Label("用户名:");
         grid.add(userName, 0, 1);
 
         TextField userTextField = new TextField();
         grid.add(userTextField, 1, 1);
 
-        Label pw = new Label("Password:");
+        /*userTextField.focusedProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                System.out.println("InvalidationListener");
+            }
+        });
+        userTextField.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                System.out.println("ChangeListener");
+            }
+        });*/
+
+        Label pw = new Label("密码:");
         grid.add(pw, 0, 2);
 
         PasswordField pwBox = new PasswordField();
         grid.add(pwBox, 1, 2);
 
-        Button btn = new Button("Sign in");
+        Button btn = new Button("登陆");
         HBox hbBtn = new HBox(20);
         hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
         hbBtn.getChildren().add(btn);
@@ -55,7 +72,7 @@ public class LoginView extends Application {
 
         btn.setOnAction(e -> {
             actiontarget.setFill(Color.FIREBRICK);
-            actiontarget.setText("Sign in button pressed");
+            actiontarget.setText("");
         });
 
         Scene scene = new Scene(grid, 500, 300);
