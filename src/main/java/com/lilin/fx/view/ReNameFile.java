@@ -27,7 +27,7 @@ public class ReNameFile extends Application {
         final Button openButton = new Button("Open a Picture...");
         final Button openMultipleButton = new Button("Open Pictures...");
 
-        //选择单个文件
+        //选择单个文件,
         openButton.setOnAction(
                 (final ActionEvent e) -> {
                     configureFileChooser(fileChooser);

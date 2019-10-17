@@ -6,6 +6,7 @@ import com.lilin.fx.bean.FileVo;
 import com.lilin.fx.cellFactory.TextFieldTreeCellImpl;
 import com.lilin.fx.utils.FileUtils;
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -20,9 +21,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class EasyFileUtil extends Application {
@@ -31,10 +30,13 @@ public class EasyFileUtil extends Application {
             + "-fx-border-width: 1;\n" + "-fx-border-style: solid;\n";
     private ObservableList<String> dataList = FXCollections.observableArrayList();
 
+    private ObservableList<TreeItem<String>> selectedTreeItems = FXCollections.observableArrayList();
+
+    private ObservableList<TreeItem<String>> selectedTreeItems2 = FXCollections.observableArrayList();
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("EasyFileUtil");
+        primaryStage.setTitle("文件工具");
         //水平布局
         HBox hBox = new HBox(10);
         HBox hBox2 = new HBox(10);
@@ -44,17 +46,40 @@ public class EasyFileUtil extends Application {
         /**
          * 创建组件
          */
-        Label userName = new Label("文件夹路径:");
+        Label filePath = new Label("文件夹路径:");
+
+        Label needRepalceStr = new Label("需替换的字符串:");
+        //批量修改的文件名中包含的字符串
+        TextField witchStr = new TextField();
+        Label replaceTo = new Label("替换为:");
+        //批量修改的文件名中包含的字符串
+        TextField contianStr = new TextField();
+
+
         //文件选择
         //FileChooser fileChooser = new FileChooser();
         //文件夹选择
         DirectoryChooser dc = new DirectoryChooser();
-        TextField userTextField = new TextField();
-        userTextField.setPrefColumnCount(20);
+        //文件或者文件夹路径
+        TextField filePathText = new TextField();
+        filePathText.setPrefColumnCount(20);
+        //按钮
         Button fileBtn = new Button("浏览");
+        //选取
+        Button choosebtn = new Button("选取");
+        //删除
+        Button deletebtn = new Button("删除");
+        //修改
+        Button modifybtn = new Button("修改");
+        //列表框
         ListView listView = new ListView();
-        TreeView<String> tree=new TreeView<>();
-        //给按钮添加事件
+        //列表树
+        TreeView<String> tree = new TreeView<>();
+
+
+        /**
+         * 打开文件夹选择器  选中一个文件夹 把文件夹的路径填充到文本域中
+         */
         fileBtn.setOnAction(
                 (final ActionEvent e) -> {
                     dc.setTitle("选择一个文件夹");
@@ -62,23 +87,138 @@ public class EasyFileUtil extends Application {
                             new File(System.getProperty("user.home"))
                     );
                     File file = dc.showDialog(primaryStage);
-                    String directoryPath = file.getAbsolutePath();
-                    userTextField.setText(directoryPath);
-                    Map<String, List<String>> map = new HashMap<>();
-                    map = FileUtils.getFile2(directoryPath, map);
-                    for (Map.Entry entry : map.entrySet()) {
-                        for (String fileName : (List<String>) entry.getValue()) {
-                            dataList.add(fileName);
-                            //listView.getItems().add(new CheckBoxListItem(fileName));
+                    try {
+                        if (file.getAbsolutePath() != null) {
+                            String directoryPath = file.getAbsolutePath();
+                            filePathText.setText(directoryPath);
+                            //给listView添加数据
+                        /*Map<String, List<String>> map = new HashMap<>();
+                        map = FileUtils.getFile2(directoryPath, map);
+                        for (Map.Entry entry : map.entrySet()) {
+                            for (String fileName : (List<String>) entry.getValue()) {
+                                dataList.add(fileName);
+                                //listView.getItems().add(new CheckBoxListItem(fileName));
+                            }
                         }
+                        listView.setItems(dataList);*/
+
+
+                            //树结构设置并添加数据
+                            FileVo fileVo = FileUtils.getFiles(directoryPath);
+                            TreeItem<String> rootItem = new MyTreeView(fileVo).getTree();
+                            tree.setRoot(rootItem);
+
+                        }
+                    } catch (Exception e1) {
+                        if (e1 instanceof NullPointerException) {
+                            System.out.println("请选择文件名的名字");
+                        } else {
+                            e1.printStackTrace();
+                        }
+
                     }
-                    listView.setItems(dataList);
+
+                });
+        /**
+         *   将树中被选中的文件  放到 列表框中
+         */
+       /* choosebtn.setOnAction(
+                (final ActionEvent e) -> {
+                    //获取文件夹的路径
+                    //String directoryPath = userTextField.getText();
+                    //获取到多选模式下面  选中的文件下表
+                    selectedTreeItems = tree.getSelectionModel().getSelectedItems();
+                    for (TreeItem<String> treeNode : selectedTreeItems) {
+                        //dataList.add(directoryPath + "\\" + treeNode.getValue());
+                        listView.getItems().add(treeNode.getValue());
+                    }
+                    //listView.getItems().add(dataList);
+                });*/
 
 
-                    //树结构设置
-                    FileVo fileVo=FileUtils.getFiles(directoryPath);
-                    TreeItem<String> rootItem=new MyTreeView(fileVo).getTree();
-                    tree.setRoot(rootItem);
+        /**
+         * 批量修改文件的名字
+         */
+        modifybtn.setOnAction(
+                (final ActionEvent e) -> {
+                    selectedTreeItems2 = tree.getSelectionModel().getSelectedItems();
+                    try {
+                        selectedTreeItems2.stream().forEach(treeNode -> {
+                            File file = new File(filePathText.getText() + File.separator + treeNode.getValue());
+                            if(!file.exists()){
+                                return;
+                            }
+                            //看看你选中的文件名字是不是包含需要修改的文件名字
+                            if (treeNode.getValue().contains(witchStr.getText())) {
+                                //替换过后的新的文件名字
+                                String str=treeNode.getValue().replace(witchStr.getText(),contianStr.getText());
+                                File newFile = new File(filePathText.getText() + File.separator + str);
+                                if(!newFile.exists()){
+                                    return;
+                                }
+                                file.renameTo(newFile);
+                                treeNode.setValue(str);
+                            }
+                        });
+                        //弹框  提示替换成功了
+                        dialog("恭喜","替换成功了！");
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+
+
+                });
+
+
+        /**
+         * 点击选择按钮 删除树中选中的文件的名字
+         */
+        deletebtn.setOnAction(
+                (final ActionEvent e) -> {
+                    //按钮部分可以使用预设的也可以像这样自己 new 一个
+                    Alert _alert = new Alert(Alert.AlertType.CONFIRMATION, "接下来你可以", new ButtonType("取消", ButtonBar.ButtonData.NO),
+                            new ButtonType("确定", ButtonBar.ButtonData.YES));
+                    //设置窗口的标题
+                    _alert.setTitle("提示");
+                    _alert.setHeaderText("你确定要删除吗？");
+                    //设置对话框的 icon 图标，参数是主窗口的 stage
+                    //showAndWait() 将在对话框消失以前不会执行之后的代码
+                    Optional<ButtonType> _buttonType = _alert.showAndWait();
+                    //根据点击结果返回
+                    if (_buttonType.get().getButtonData().equals(ButtonBar.ButtonData.YES)) {
+
+                        //保存待删除的子节点集合
+                        List<TreeItem<String>> list = new ArrayList();
+                        //选中删除节点集合
+                        selectedTreeItems = tree.getSelectionModel().getSelectedItems();
+                        System.out.println("选中" + selectedTreeItems.size() + "个节点");
+                        //遍历
+                        selectedTreeItems.stream().forEach(treeNode -> {
+                            File file = new File(filePathText.getText() + File.separator + treeNode.getValue());
+                            // 如果文件路径所对应的文件存在，并且是一个文件，则直接删除
+                            if (file.exists() && file.isFile()) {
+                                if (file.delete()) {
+                                    System.out.println("删除文件" + file.getName() + "成功！");
+                                } else {
+                                    System.out.println("删除文件" + file.getName() + "失败！");
+                                }
+                            } else {
+                                System.out.println("删除文件失败：" + file.getName() + "不存在！");
+                            }
+                            list.add(treeNode);
+                        });
+                        /**
+                         * 在tree中删除节点
+                         *
+                         * 这里需要借助java中的List 遍历删除tree中的节点  ObservableList不行 不知道为啥？？？
+                         */
+                        for (TreeItem<String> dd : list) {
+                            System.out.println(dd.getValue());
+                            dd.getParent().getChildren().remove(dd);
+                        }
+                    } else {
+                        _alert.close();
+                    }
 
                 });
         /**
@@ -87,23 +227,27 @@ public class EasyFileUtil extends Application {
         MyListView myListView = new MyListView(listView);
         myListView.moreSelectModel(true);
         myListView.moreSelectEvent();
-        listView.setEditable(true);
+        //listView.setEditable(true);
+
 
         /**
          * 设置Tree的属性
          */
         tree.setEditable(true);
-        tree.setPrefSize(300,500);
-        tree.setCellFactory((TreeView<String> p) ->
-                new TextFieldTreeCellImpl());
-
+        tree.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        tree.setPrefSize(300, 500);
 
 
         //把组件都添加到水瓶布局中
-        hBox.getChildren().addAll(userName, userTextField, fileBtn);
-        hBox2.getChildren().addAll(listView, tree);
+        hBox.getChildren().addAll(filePath, filePathText, fileBtn);
+
+        VBox v_buttons = new VBox(10);
+        v_buttons.getChildren().addAll(deletebtn, needRepalceStr,witchStr,replaceTo,contianStr, modifybtn);
+
+        hBox2.getChildren().addAll(tree, v_buttons);
 
 
+        //再把水平布局加到垂直布局中去
         final Pane rootGroup = new VBox(10);
         //rootGroup.setPadding(new Insets(20));
         rootGroup.getChildren().addAll(hBox, hBox2);
@@ -115,6 +259,14 @@ public class EasyFileUtil extends Application {
         primaryStage.show();
     }
 
+    public void dialog(String heeaderText,String contentText){
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("提示");
+        alert.setHeaderText(heeaderText);
+        alert.setContentText(contentText);
+
+        alert.showAndWait();
+    }
 
     public static void main(String[] args) {
         launch(args);
