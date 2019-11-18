@@ -88,10 +88,10 @@ public class EasyFileUtil extends Application {
                     );
                     File file = dc.showDialog(primaryStage);
                     try {
-                        if (file.getAbsolutePath() != null) {
-                            String directoryPath = file.getAbsolutePath();
-                            filePathText.setText(directoryPath);
-                            //给listView添加数据
+                        String directoryPath = file.getAbsolutePath();
+                        System.out.println(directoryPath);
+                        filePathText.setText(directoryPath);
+                        //给listView添加数据
                         /*Map<String, List<String>> map = new HashMap<>();
                         map = FileUtils.getFile2(directoryPath, map);
                         for (Map.Entry entry : map.entrySet()) {
@@ -103,19 +103,18 @@ public class EasyFileUtil extends Application {
                         listView.setItems(dataList);*/
 
 
-                            //树结构设置并添加数据
-                            FileVo fileVo = FileUtils.getFiles(directoryPath);
-                            TreeItem<String> rootItem = new MyTreeView(fileVo).getTree();
-                            tree.setRoot(rootItem);
+                        //树结构设置并添加数据
+                        FileVo fileVo = FileUtils.getFiles(directoryPath);
+                        TreeItem<String> rootItem = new MyTreeView(fileVo).getTree();
+                        tree.setRoot(rootItem);
 
-                        }
                     } catch (Exception e1) {
-                        if (e1 instanceof NullPointerException) {
+                        /*if (e1 instanceof NullPointerException) {
                             System.out.println("请选择文件名的名字");
                         } else {
                             e1.printStackTrace();
-                        }
-
+                        }*/
+                        e1.printStackTrace();
                     }
 
                 });
@@ -146,21 +145,20 @@ public class EasyFileUtil extends Application {
                         selectedTreeItems2.stream().forEach(treeNode -> {
                             File file = new File(filePathText.getText() + File.separator + treeNode.getValue());
                             if(!file.exists()){
-                                return;
+                                throw new RuntimeException("文件不存在");
                             }
+                            String str="";
+                            File newFile=null;
                             //看看你选中的文件名字是不是包含需要修改的文件名字
                             if (treeNode.getValue().contains(witchStr.getText())) {
                                 //替换过后的新的文件名字
-                                String str=treeNode.getValue().replace(witchStr.getText(),contianStr.getText());
-                                File newFile = new File(filePathText.getText() + File.separator + str);
-                                if(!newFile.exists()){
-                                    return;
-                                }
+                                str=treeNode.getValue().replace(witchStr.getText(),contianStr.getText());
+                                newFile= new File(filePathText.getText() + File.separator + str);
+                                System.out.println("新文件名"+newFile.getName()+"--旧文件名"+file.getName());
                                 file.renameTo(newFile);
                                 treeNode.setValue(str);
                             }
                         });
-                        //弹框  提示替换成功了
                         dialog("恭喜","替换成功了！");
                     } catch (Exception e1) {
                         e1.printStackTrace();

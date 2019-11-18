@@ -22,11 +22,11 @@
             <configuration>
                 <archive>
                     <manifest>
-                        <mainClass>com.lilin.fx.MainTest</mainClass>
+                        <mainClass>com.lilin.fx.view.EasyFileUtil</mainClass>
                     </manifest>
                 </archive>
                 <descriptorRefs>
-                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                    <descriptorRef>containMainMethod</descriptorRef>
                 </descriptorRefs>
             </configuration>
             <executions>
